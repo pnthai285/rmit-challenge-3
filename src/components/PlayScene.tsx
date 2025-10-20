@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, ArrowRight } from 'lucide-react';
-import { scenario } from '../data/scenario';
-import { ScenarioChoice } from '../types/game';
+import { ScenarioChoice, ScenarioStep } from '../types/game';
 
 interface PlaySceneProps {
+  scenario: ScenarioStep[];
   onGameOver: (score: number, choice: string) => void;
 }
 
-export function PlayScene({ onGameOver }: PlaySceneProps) {
+export function PlayScene({ scenario, onGameOver }: PlaySceneProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [playerScore, setPlayerScore] = useState(100);
 
@@ -25,6 +25,32 @@ export function PlayScene({ onGameOver }: PlaySceneProps) {
     const newScore = playerScore + choice.scoreEffect;
     setPlayerScore(newScore);
     onGameOver(newScore, choice.text);
+  };
+
+  const getSpeakerColor = (speaker: string) => {
+    switch (speaker) {
+      case 'An':
+        return 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white';
+      case 'Mai':
+      case 'Friend':
+        return 'bg-slate-700 text-white';
+      case 'Hacker':
+        return 'bg-red-900/50 text-white border border-red-500/30';
+      case 'Bank':
+        return 'bg-green-900/50 text-white border border-green-500/30';
+      case 'Police':
+        return 'bg-blue-900/50 text-white border border-blue-500/30';
+      case 'Recruiter':
+        return 'bg-purple-900/50 text-white border border-purple-500/30';
+      case 'Lover':
+        return 'bg-pink-900/50 text-white border border-pink-500/30';
+      case 'Charity':
+        return 'bg-yellow-900/50 text-white border border-yellow-500/30';
+      case 'Stranger':
+        return 'bg-gray-700 text-white';
+      default:
+        return 'bg-slate-600 text-white';
+    }
   };
 
   return (
@@ -61,11 +87,7 @@ export function PlayScene({ onGameOver }: PlaySceneProps) {
             >
               <div className={`flex ${currentScenario.speaker === 'An' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[80%] rounded-2xl p-4 ${
-                    currentScenario.speaker === 'Mai'
-                      ? 'bg-slate-700 text-white'
-                      : 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white'
-                  }`}
+                  className={`max-w-[80%] rounded-2xl p-4 ${getSpeakerColor(currentScenario.speaker)}`}
                 >
                   <p className="text-sm font-semibold mb-2 opacity-75">
                     {currentScenario.speaker}

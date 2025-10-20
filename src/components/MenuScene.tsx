@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
-import { Shield, Play } from 'lucide-react';
+import { Shield, Play, List } from 'lucide-react';
 
 interface MenuSceneProps {
   onStartGame: () => void;
+  onSelectScenario: () => void;
 }
 
-export function MenuScene({ onStartGame }: MenuSceneProps) {
+export function MenuScene({ onStartGame, onSelectScenario }: MenuSceneProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
       <motion.div
@@ -43,18 +44,33 @@ export function MenuScene({ onStartGame }: MenuSceneProps) {
           Thử Thách An Ninh Mạng
         </motion.p>
 
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onStartGame}
-          className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-12 py-4 rounded-full text-xl font-semibold shadow-lg hover:shadow-2xl transition-all duration-300 flex items-center gap-3 mx-auto"
-        >
-          <Play className="w-6 h-6" />
-          Chơi Ngay
-        </motion.button>
+        <div className="flex flex-col gap-4 items-center">
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onStartGame}
+            className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-12 py-4 rounded-full text-xl font-semibold shadow-lg hover:shadow-2xl transition-all duration-300 flex items-center gap-3"
+          >
+            <Play className="w-6 h-6" />
+            Chơi Nhanh
+          </motion.button>
+
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onSelectScenario}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-12 py-4 rounded-full text-xl font-semibold shadow-lg hover:shadow-2xl transition-all duration-300 flex items-center gap-3"
+          >
+            <List className="w-6 h-6" />
+            Chọn Kịch Bản
+          </motion.button>
+        </div>
 
         <motion.div
           initial={{ opacity: 0 }}
