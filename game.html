@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thử Thách An Ninh Mạng</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #1a1a2e;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://unpkg.com/kaboom@3000.0.1/dist/kaboom.js"></script>
+    <script>
+        // Khởi tạo Kaboom
+        kaboom({
+            width: 800,
+            height: 600,
+            background: [26, 26, 46],
+            font: "sans-serif"
+        });
+
+        // Biến điểm số toàn cục
+        let playerScore = 100;
+
+        // Dữ liệu kịch bản
+        const scenario = [
+            { speaker: 'Mai', text: 'An ơi, đang làm gì đó?' },
+            { speaker: 'Mai', text: 'Tớ đang có việc gấp quá mà tài khoản bị lỗi, cho tớ mượn tạm 500k được không? Tối tớ trả lại ngay.' },
+            { speaker: 'Mai', text: 'Cậu chuyển vào link này giúp tớ nhé, đừng chuyển vào STK cũ. Thanks cậu nhiều! [http://nhan-tien-nhanh.xyz/MOMO-NHAN-500K]' },
+            {
+                speaker: 'An',
+                text: '...',
+                choices: [
+                    { text: 'Ok, chuyển liền đây.', scoreEffect: -100 },
+                    { text: 'Sao link lạ vậy? Cậu gọi điện cho tớ xác nhận đi.', scoreEffect: 0 },
+                    { text: 'Hỏi vay tiền mà không gọi, chắc chắn là lừa đảo rồi.', scoreEffect: 10 }
+                ]
+            }
+        ];
+
+        // Hàm tạo nút
+        function createButton(text, pos, onClick) {
+            const button = add([
+                rect(280, 50, { radius: 8 }),
+                pos,
+                area(),
+                anchor("center"),
+                color(70, 130, 180),
+                "button"
+            ]);
+
+            const buttonText = button.add([
+                text(text, { size: 20 }),
+                anchor("center"),
+                color(255, 255, 255)
+            ]);
+
+            button.onHoverUpdate(() => {
+                button.scale = vec2(1.05, 1.05);
+                button.color = rgb(90, 150, 200);
+                setCursor("pointer");
+            });
+
+            button.onHoverEnd(() => {
+                button.scale = vec2(1, 1);
+                button.color = rgb(70, 130, 180);
+                setCursor("default");
+            });
+
+            button.onClick(onClick);
+
+            return button;
+        }
+
+        // Scene Menu
+        scene("menu", () => {
+            add([
+                text("Berserker", { size: 64 }),
+                pos(center().x, center().y - 100),
+                anchor("center"),
+                color(255, 255, 255)
+            ]);
+
+            add([
+                text("Thử Thách An Ninh Mạng", { size: 24 }),
+                pos(center().x, center().y - 30),
+                anchor("center"),
+                color(200, 200, 200)
+            ]);
+
+            createButton("Chơi", vec2(center().x, center().y + 80), () => {
+                go("play");
+            });
+        });
+
+        // Scene Play
+        scene("play", () => {
+            playerScore = 100;
+            let currentStep = 0;
+
+            // Hộp chat
+            const chatBox = add([
+                rect(700, 400, { radius: 12 }),
+                pos(center().x, center().y - 40),
+                anchor("center"),
+                color(40, 40, 60),
+                outline(2, rgb(100, 100, 120))
+            ]);
+
+            // Tên người nói
+            const speakerLabel = add([
+                text("", { size: 22, width: 650 }),
+                pos(center().x, center().y - 200),
+                anchor("center"),
+                color(100, 200, 255)
+            ]);
+
+            // Nội dung tin nhắn
+            const messageText = add([
+                text("", { size: 18, width: 650, lineSpacing: 8 }),
+                pos(center().x, center().y - 100),
+                anchor("center"),
+                color(255, 255, 255)
+            ]);
+
+            // Container cho các nút lựa chọn
+            let choiceButtons = [];
+            let continueButton = null;
+
+            function showMessage() {
+                const current = scenario[currentStep];
+
+                speakerLabel.text = current.speaker + ":";
+                messageText.text = current.text;
+
+                // Xóa các nút cũ
+                choiceButtons.forEach(btn => destroy(btn));
+                choiceButtons = [];
+                if (continueButton) {
+                    destroy(continueButton);
+                    continueButton = null;
+                }
+
+                // Nếu có choices, hiển thị các nút lựa chọn
+                if (current.choices) {
+                    current.choices.forEach((choice, index) => {
+                        const yOffset = 200 + (index * 70);
+                        const btn = createButton(
+                            choice.text,
+                            vec2(center().x, center().y + yOffset - 150),
+                            () => {
+                                playerScore += choice.scoreEffect;
+                                go("gameover", playerScore);
+                            }
+                        );
+                        choiceButtons.push(btn);
+                    });
+                } else {
+                    // Hiển thị nút Tiếp tục
+                    continueButton = createButton("Tiếp tục", vec2(center().x, center().y + 200), () => {
+                        currentStep++;
+                        if (currentStep < scenario.length) {
+                            showMessage();
+                        }
+                    });
+                }
+            }
+
+            showMessage();
+        });
+
+        // Scene Gameover
+        scene("gameover", (finalScore) => {
+            add([
+                text("Kết thúc!", { size: 56 }),
+                pos(center().x, center().y - 120),
+                anchor("center"),
+                color(255, 255, 255)
+            ]);
+
+            let resultText = "";
+            let resultColor = rgb(255, 255, 255);
+
+            if (finalScore <= 0) {
+                resultText = "Bạn đã mất tất cả! Hãy cẩn thận hơn với lừa đảo.";
+                resultColor = rgb(255, 80, 80);
+            } else if (finalScore === 100) {
+                resultText = "Bạn đã từ chối chuyển tiền nhưng không tích cực xác minh.";
+                resultColor = rgb(255, 200, 100);
+            } else if (finalScore > 100) {
+                resultText = "Xuất sắc! Bạn đã nhận diện được lừa đảo!";
+                resultColor = rgb(100, 255, 100);
+            }
+
+            add([
+                text("Điểm của bạn: " + finalScore, { size: 32 }),
+                pos(center().x, center().y - 40),
+                anchor("center"),
+                color(100, 200, 255)
+            ]);
+
+            add([
+                text(resultText, { size: 18, width: 600 }),
+                pos(center().x, center().y + 20),
+                anchor("center"),
+                color(resultColor)
+            ]);
+
+            createButton("Chơi lại", vec2(center().x, center().y + 120), () => {
+                go("menu");
+            });
+        });
+
+        // Bắt đầu game
+        go("menu");
+    </script>
+</body>
+</html>
