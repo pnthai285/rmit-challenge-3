@@ -6,10 +6,12 @@ import { supabase, GameScore } from '../lib/supabase';
 interface GameOverSceneProps {
   finalScore: number;
   choiceMade: string;
+  lessonTitle?: string;
+  lessonText?: string;
   onPlayAgain: () => void;
 }
 
-export function GameOverScene({ finalScore, choiceMade, onPlayAgain }: GameOverSceneProps) {
+export function GameOverScene({ finalScore, choiceMade, lessonTitle, lessonText, onPlayAgain }: GameOverSceneProps) {
   const [playerName, setPlayerName] = useState('');
   const [scoreSaved, setScoreSaved] = useState(false);
   const [topScores, setTopScores] = useState<GameScore[]>([]);
@@ -110,7 +112,7 @@ export function GameOverScene({ finalScore, choiceMade, onPlayAgain }: GameOverS
               transition={{ delay: 0.3 }}
               className="text-4xl font-bold text-white text-center mb-2"
             >
-              {result.title}
+              {lessonTitle || result.title}
             </motion.h2>
 
             <motion.div
@@ -131,7 +133,7 @@ export function GameOverScene({ finalScore, choiceMade, onPlayAgain }: GameOverS
               transition={{ delay: 0.5 }}
               className="text-slate-300 text-center mb-8 leading-relaxed"
             >
-              {result.message}
+              {lessonText || result.message}
             </motion.p>
 
             {!scoreSaved ? (

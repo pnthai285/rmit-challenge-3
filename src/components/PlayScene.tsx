@@ -1,31 +1,49 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, ArrowRight } from 'lucide-react';
 import { ScenarioChoice, ScenarioStep } from '../types/game';
 
 interface PlaySceneProps {
   scenario: ScenarioStep[];
-  onGameOver: (score: number, choice: string) => void;
+  onGameOver: (score: number, choice: string, lessonTitle?: string, lessonText?: string) => void;
 }
 
 export function PlayScene({ scenario, onGameOver }: PlaySceneProps) {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStepId, setCurrentStepId] = useState(1);
   const [playerScore, setPlayerScore] = useState(100);
 
-  const currentScenario = scenario[currentStep];
-  const isLastStep = currentStep === scenario.length - 1;
+  // Tìm step hiện tại theo ID
+  const currentScenario = scenario.find(step => step.id === currentStepId);
 
   const handleContinue = () => {
-    if (currentStep < scenario.length - 1) {
-      setCurrentStep(currentStep + 1);
+    const currentIndex = scenario.findIndex(step => step.id === currentStepId);
+    if (currentIndex < scenario.length - 1) {
+      setCurrentStepId(scenario[currentIndex + 1].id);
     }
   };
 
   const handleChoice = (choice: ScenarioChoice) => {
     const newScore = playerScore + choice.scoreEffect;
     setPlayerScore(newScore);
-    onGameOver(newScore, choice.text);
+
+    if (choice.isGameOver) {
+      // Kết thúc game với bài học
+      onGameOver(newScore, choice.text, choice.lessonTitle, choice.lessonText);
+    } else if (choice.nextStep) {
+      // Chuyển đến step tiếp theo
+      setCurrentStepId(choice.nextStep);
+    }
   };
+
+  // Auto progress nếu step có flag autoProgress
+  useEffect(() => {
+    if (currentScenario?.autoProgress) {
+      const timer = setTimeout(() => {
+        handleContinue();
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStepId, currentScenario]);
 
   const getSpeakerColor = (speaker: string) => {
     switch (speaker) {
@@ -43,15 +61,24 @@ export function PlayScene({ scenario, onGameOver }: PlaySceneProps) {
       case 'Recruiter':
         return 'bg-purple-900/50 text-white border border-purple-500/30';
       case 'Lover':
+      case 'Alex':
         return 'bg-pink-900/50 text-white border border-pink-500/30';
       case 'Charity':
         return 'bg-yellow-900/50 text-white border border-yellow-500/30';
+      case 'Customs':
+        return 'bg-orange-900/50 text-white border border-orange-500/30';
+      case 'SMS':
+        return 'bg-gray-700 text-white';
       case 'Stranger':
         return 'bg-gray-700 text-white';
       default:
         return 'bg-slate-600 text-white';
     }
   };
+
+  if (!currentScenario) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
@@ -78,7 +105,7 @@ export function PlayScene({ scenario, onGameOver }: PlaySceneProps) {
           {/* Message */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={currentStep}
+              key={currentStepId}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
@@ -102,7 +129,7 @@ export function PlayScene({ scenario, onGameOver }: PlaySceneProps) {
 
           {/* Actions */}
           <div className="space-y-3">
-            {currentScenario.choices ? (
+            {currentScenario.choices && !currentScenario.autoProgress ? (
               <AnimatePresence>
                 {currentScenario.choices.map((choice, index) => (
                   <motion.button
@@ -119,20 +146,19 @@ export function PlayScene({ scenario, onGameOver }: PlaySceneProps) {
                   </motion.button>
                 ))}
               </AnimatePresence>
-            ) : (
+            ) : !currentScenario.choices && !currentScenario.autoProgress ? (
               <motion.button
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleContinue}
-                disabled={isLastStep}
                 className="w-full bg-slate-700 hover:bg-slate-600 text-white px-6 py-4 rounded-xl font-medium shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
               >
                 Tiếp tục
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
-            )}
+            ) : null}
           </div>
         </div>
       </motion.div>

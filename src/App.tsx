@@ -11,14 +11,10 @@ function App() {
   const [scene, setScene] = useState<GameScene>('menu');
   const [finalScore, setFinalScore] = useState(0);
   const [choiceMade, setChoiceMade] = useState('');
+  const [lessonTitle, setLessonTitle] = useState<string>('');
+  const [lessonText, setLessonText] = useState<string>('');
   const [selectedScenario, setSelectedScenario] = useState<ScenarioStep[]>(scenarios[0].steps);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-
-  const handleStartGame = () => {
-    // Chơi nhanh với kịch bản đầu tiên
-    setSelectedScenario(scenarios[0].steps);
-    setScene('play');
-  };
 
   const handleSelectCategoryScreen = () => {
     setScene('category-selection');
@@ -37,9 +33,11 @@ function App() {
     }
   };
 
-  const handleGameOver = (score: number, choice: string) => {
+  const handleGameOver = (score: number, choice: string, title?: string, text?: string) => {
     setFinalScore(score);
     setChoiceMade(choice);
+    setLessonTitle(title || '');
+    setLessonText(text || '');
     setScene('gameover');
   };
 
@@ -59,7 +57,6 @@ function App() {
     <>
       {scene === 'menu' && (
         <MenuScene 
-          onStartGame={handleStartGame}
           onSelectScenario={handleSelectCategoryScreen}
         />
       )}
@@ -86,6 +83,8 @@ function App() {
         <GameOverScene
           finalScore={finalScore}
           choiceMade={choiceMade}
+          lessonTitle={lessonTitle}
+          lessonText={lessonText}
           onPlayAgain={handlePlayAgain}
         />
       )}

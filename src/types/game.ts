@@ -1,12 +1,18 @@
 export interface ScenarioChoice {
   text: string;
   scoreEffect: number;
+  nextStep?: number; // ID của bước tiếp theo (nếu có nhánh)
+  isGameOver?: boolean; // True nếu lựa chọn này kết thúc game
+  lessonTitle?: string; // Tiêu đề bài học khi kết thúc
+  lessonText?: string; // Nội dung bài học khi kết thúc
 }
 
 export interface ScenarioStep {
-  speaker: 'Mai' | 'An' | 'Hacker' | 'Bank' | 'System' | 'Police' | 'Stranger' | 'Friend' | 'Recruiter' | 'Lover' | 'Charity';
+  id: number; // ID duy nhất của step
+  speaker: 'Mai' | 'An' | 'Hacker' | 'Bank' | 'System' | 'Police' | 'Stranger' | 'Friend' | 'Recruiter' | 'Lover' | 'Charity' | 'Alex' | 'Customs' | 'SMS';
   text: string;
   choices?: ScenarioChoice[];
+  autoProgress?: boolean; // Tự động chuyển sang bước tiếp mà không cần lựa chọn
 }
 
 export interface Scenario {
